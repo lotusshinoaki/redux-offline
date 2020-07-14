@@ -1,6 +1,6 @@
 /* eslint no-underscore-dangle: 0 */
-import { AppState, NetInfo } from 'react-native'; // eslint-disable-line
-import LegacyDetectNetwork from './detectNetwork.native.legacy';
+import { AppState } from 'react-native'; // eslint-disable-line
+import NetInfo from './netinfo';
 
 class DetectNetwork {
   constructor(callback) {
@@ -42,6 +42,7 @@ class DetectNetwork {
   _setReach = reach => {
     this._reach = reach;
     this._isConnected = this._getConnection(reach);
+    console.log(`DetectNetwork._isConnected=${this._isConnected}`); // eslint-disable-line
   };
   /**
    * Gets the isConnected prop depending on the connection reachability's value
@@ -83,9 +84,9 @@ class DetectNetwork {
    * @private
    */
   _init = async () => {
-    const connectionInfo = await NetInfo.getConnectionInfo();
+    const state = await NetInfo.fetch();
     if (this._shouldInitUpdateReach) {
-      this._update(connectionInfo.type);
+      this._update(state.isInternetReachable ? state.type : 'none');
     }
   };
   /**
@@ -109,14 +110,14 @@ class DetectNetwork {
    * @private
    */
   _addListeners() {
-    NetInfo.addEventListener('connectionChange', connectionInfo => {
+    NetInfo.addEventListener(state => {
       this._setShouldInitUpdateReach(false);
-      this._update(connectionInfo.type);
+      this._update(state.isInternetReachable ? state.type : 'none');
     });
     AppState.addEventListener('change', async () => {
       this._setShouldInitUpdateReach(false);
-      const connectionInfo = await NetInfo.getConnectionInfo();
-      this._update(connectionInfo.type);
+      const state = await NetInfo.fetch();
+      this._update(state.isInternetReachable ? state.type : 'none');
     });
   }
 
@@ -138,6 +139,4 @@ class DetectNetwork {
   };
 }
 
-const isLegacy = typeof NetInfo.getConnectionInfo === 'undefined';
-export default callback =>
-  isLegacy ? new LegacyDetectNetwork(callback) : new DetectNetwork(callback);
+export default callback => new DetectNetwork(callback);

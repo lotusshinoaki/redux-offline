@@ -6,6 +6,9 @@ import { createOfflineMiddleware } from './middleware';
 import { enhanceReducer } from './updater';
 import { applyDefaults } from './config';
 import { networkStatusChanged } from './actions';
+import _NetInfo from './defaults/netinfo';
+
+export const NetInfo = _NetInfo;
 
 // @TODO: Take createStore as config?
 const warnIfNotReduxAction = (config: $Shape<Config>, key: string) => {
